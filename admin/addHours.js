@@ -31,6 +31,15 @@ module.exports = async (interaction) => {
       },
     ],
   };
+  const [config] = await db.query('SELECT valor FROM configuracion WHERE clave = ?', ['canal_logs']);
+const logChannelId = config[0]?.valor;
+if (logChannelId) {
+  const logChannel = interaction.client.channels.cache.get(logChannelId);
+  if (logChannel) {
+    logChannel.send(`📢 Log: Acción realizada por <@${interaction.user.id}>`);
+  }
+}
+
 
   await interaction.showModal(modal);
 };
