@@ -1,12 +1,14 @@
-const mysql = require('mysql2/promise');
+import mysql.connector
+from dotenv import load_dotenv
+import os
 
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'tu_contraseña',
-  database: 'fichajes_bot',
-  waitForConnections: true,
-  connectionLimit: 10,
-});
+# Cargar variables de entorno
+load_dotenv()
 
-module.exports = pool;
+def connect_db():
+    return mysql.connector.connect(
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME")
+    )
