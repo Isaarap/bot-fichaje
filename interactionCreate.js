@@ -43,3 +43,52 @@ module.exports = async (interaction) => {
     }
   }
 };
+if (interaction.customId === 'admin_remove_hours_modal') {
+  const userId = interaction.fields.getTextInputValue('user_id');
+  let horasARestar = parseFloat(interaction.fields.getTextInputValue('horas'));
+
+  if (isNaN(horasARestar) || horasARestar <= 0) {
+    return interaction.reply({ content: '❌ Horas inválidas.', ephemeral: true });
+  }
+
+  const db = require('./utils/db');
+
+  const [fichajes] = await db.query(
+    `SELECT id, start_time, end_time FROM fichajes 
+     WHERE user_id = ? AND end_time IS NOT NULL 
+     ORDER BY end_time DESC`,
+    [userId]
+  );
+
+  let horasRestadas = 0;
+
+  for (const f of fichajes) {
+    const inicio = new Date(f.start_time);
+    const fin = new Date(f.end_time);
+    const duracionHoras = (fin - inicio) / (1000 * 60 * 60);
+
+    if (duracionHoras <= horasARestar) {
+      // Borrar el registro entero
+      await db.query('DELETE FROM fichajes WHERE id = ?', [f.id]);
+      horasARestar -= duracionHoras;
+      horasRestadas += duracionHoras;
+    } else {
+      // Acortar el registro
+      const nuevoFin = new Date(fin.getTime() - horasARestar * 60 * 60 * 1000);
+      await db.query('UPDATE fichajes SET end_time = ? WHERE id = ?', [nuevoFin, f.id]);
+      horasRestadas += horasARestar;
+      horasARestar = 0;
+      break;
+    }
+
+    if (horasARestar <= 0) break;
+  }
+
+  await db.query(
+    'INSERT INTO logs (action, user_id, executor_id) VALUES (?, ?, ?)',
+    [`Admin restó ${horasRestadas.toFixed(2)}h`, userId, interaction.user.id]
+  );
+
+  return interaction.reply({ content: `➖ Se restaron ${horasRestadas.toFixed(2)}h a <@${userId}>`, ephemeral: true });
+}
+
