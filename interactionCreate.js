@@ -91,4 +91,23 @@ if (interaction.customId === 'admin_remove_hours_modal') {
 
   return interaction.reply({ content: `➖ Se restaron ${horasRestadas.toFixed(2)}h a <@${userId}>`, ephemeral: true });
 }
+if (interaction.customId === 'admin_delete_all_hours_modal') {
+  const userId = interaction.fields.getTextInputValue('user_id');
+
+  const [registros] = await db.query('SELECT COUNT(*) AS total FROM fichajes WHERE user_id = ?', [userId]);
+  const total = registros[0]?.total || 0;
+
+  if (total === 0) {
+    return interaction.reply({ content: '⚠️ El usuario no tiene horas registradas.', ephemeral: true });
+  }
+
+  await db.query('DELETE FROM fichajes WHERE user_id = ?', [userId]);
+
+  await db.query(
+    'INSERT INTO logs (action, user_id, executor_id) VALUES (?, ?, ?)',
+    [`Admin eliminó todas las horas (${total} registros)`, userId, interaction.user.id]
+  );
+
+  return interaction.reply({ content: `🗑️ Se eliminaron ${total} registros de fichajes para <@${userId}>.`, ephemeral: true });
+}
 
