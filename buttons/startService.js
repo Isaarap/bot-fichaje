@@ -22,3 +22,7 @@ new ButtonBuilder()
   .setCustomId('viewStats')
   .setLabel('📊 Ver estadísticas')
   .setStyle(ButtonStyle.Primary),
+new ButtonBuilder()
+  .setCustomId('viewStats')
+  .setLabel('📊 Ver estadísticas')
+  .setStyle(ButtonStyle.Primary),
