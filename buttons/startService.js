@@ -18,3 +18,7 @@ module.exports = async (interaction, client) => {
 
   return interaction.reply({ content: '✅ Has iniciado tu jornada.', ephemeral: true });
 };
+new ButtonBuilder()
+  .setCustomId('viewStats')
+  .setLabel('📊 Ver estadísticas')
+  .setStyle(ButtonStyle.Primary),
